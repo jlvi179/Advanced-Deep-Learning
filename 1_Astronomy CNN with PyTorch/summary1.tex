@@ -1,0 +1,34 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Summary: Stellar Parameter Estimation via CNN}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{What was done and how}
+The goal of this exercise was to build a machine learning pipeline that can predict physical stellar parameters - effective temperature ($t_{\text{eff}}$), surface gravity ($\log g$), and metallicity (fe\_h) - directly from 1D stellar spectra using the GALAH dataset.
+First, the three target variables were pulled from the labels (ll. 24-26). For data prep, the spectral fluxes were clipped at a minimum value of 0.2 and then log-scaled, which helps with the pretty wide dynamic range of flux intensities (l. 29). A key preprocessing step was normalizing the target values with the \texttt{StandardScaler} (ll. 32-33). This keeps the MSE loss from getting too obsessed with temperature just because its numbers are bigger. The data was then split into 80\% training and 20\% testing sets (l. 36).
+For the PyTorch implementation, a custom \texttt{StarDataset} class was created (ll. 52-61). Since 1D convolutional layers expect the input format \texttt{(Batch, Channel, Length)}, a channel dimension was added with \texttt{unsqueeze(1)} (l. 54). The data was then handled in batches of 64 using a \texttt{DataLoader} (ll. 66-67).
+
+The core of the project is a 1D-CNN architecture named \texttt{SpectraCNN} (ll. 72-96), consisting of two main parts:
+\begin{enumerate}
+    \item \textbf{Feature Extractor (ll. 75-85):} Three sequential 1D convolutional layers pick out important spectral features like absorption lines. Each layer is followed by a \textbf{ReLU} activation and Max-Pooling. ReLU adds the needed non-linearity and also helps a bit with the vanishing gradient problem. Max-pooling steadily cuts the data dimensionality from 16,384 down to 64.
+    \item \textbf{Regressor (ll. 86-92):} The flattened features go through fully-connected layers. A Dropout of 0.3 is used to randomly drop connections during training, which helps keep overfitting in check. The final layer outputs the three stellar parameters.
+\end{enumerate}
+
+The model was optimized using the Adam optimizer (learning rate 0.001) and an MSE loss criterion over 15 training epochs (ll. 108-138). 
+
+\section*{What results were obtained}
+The model looked pretty stable while training. The learning curve (ll. 140-147) shows a steady decrease in loss for both the training and testing sets. Since the test loss stays close to the training loss, the dropout seems to have done its job, and the model seems to generalize fairly well to unseen data.
+
+To check the physical accuracy, predictions were made for the full test set (ll. 152-161) and then inverse-transformed back into their original physical units (Kelvin and dex) (ll. 164-165). The final scatter plots (ll. 167-183) back this up pretty well, with predictions clustering close to the identity line for all three parameters.
+
+\end{document}
