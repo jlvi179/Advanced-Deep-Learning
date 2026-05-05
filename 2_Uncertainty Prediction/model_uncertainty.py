@@ -11,7 +11,7 @@ class TinyCNNWithUncertainty(nn.Module):
     """
     def __init__(self, n_labels):
         super(TinyCNNWithUncertainty, self).__init__()
-        
+
         # Shared feature extraction layers
         self.features = nn.Sequential(
             nn.Conv1d(1, 10, kernel_size=5),
@@ -46,7 +46,7 @@ class TinyCNNWithUncertainty(nn.Module):
             nn.Conv1d(12, 10, kernel_size=1),
             nn.Dropout(0.2),
         )
-        
+
         # Fully connected layers after feature extraction
         self.fc_shared = nn.Sequential(
             nn.Linear(300, 32),
@@ -55,11 +55,11 @@ class TinyCNNWithUncertainty(nn.Module):
             nn.Linear(10 * 32, 128),
             nn.ReLU(),
         )
-        
+
         # Output heads: one for means, one for log-stds
         self.fc_mean = nn.Linear(128, n_labels)
         self.fc_logstd = nn.Linear(128, n_labels)
-        
+
         self.n_labels = n_labels
 
     def forward(self, x):
@@ -80,14 +80,14 @@ class TinyCNNWithUncertainty(nn.Module):
         """
         x = self.features(x)
         x = self.fc_shared(x)
-        
+
         mean = self.fc_mean(x)
         logstd = self.fc_logstd(x)
-        
+
         # Concatenate means and log-stds
         output = torch.cat([mean, logstd], dim=1)
         return output
-    
+
     def get_predictions_and_uncertainties(self, x):
         """
         Forward pass that returns predictions and uncertainties separately.

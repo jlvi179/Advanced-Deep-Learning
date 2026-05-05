@@ -1,0 +1,43 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{hyperref}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Summary: Uncertainty Prediction}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent GitHub repository: \href{https://github.com/jlvi179/Advanced-Deep-Learning}{https://github.com/jlvi179/Advanced-Deep-Learning}
+
+\section*{What the Notebook Does}
+
+The notebook trains a convolutional neural network for stellar parameter prediction from spectra. It loads the spectral data and labels, normalizes the target labels, applies a log transform to the spectra, splits the data into training, validation, and test sets, and then trains a CNN that predicts both a mean value and an uncertainty estimate for each target. In other words, it turns a standard regression task into a probabilistic one, where every prediction comes with a confidence estimate.
+
+The network has two output heads: one for the predicted value and one for the log standard deviation. Training uses a Gaussian negative log-likelihood loss, so the model learns not only to fit the labels but also to express how certain it is about each prediction. After training, the notebook evaluates the model on the test set and visualizes predicted values, uncertainty bands, pull distributions, and calibration curves. These plots are important because they show whether the model is both accurate and honest about its own uncertainty.
+
+\section*{Changes from the Standard CNN}
+
+Compared to the baseline model in \texttt{sol\_model\_examples.py}, which outputs a single point prediction via a final layer \texttt{Linear(128, nLabels)}, the uncertainty-aware model replaces that single output layer with two separate heads: one for the mean and one for log-std. This allows the network to learn not just good point estimates but also which regions of the input space have intrinsically high aleatoric uncertainty. The dual-head design is necessary because (i) a single output cannot capture both value and confidence, and (ii) predicting log-std directly is numerically more stable than predicting variance.
+
+\textbf{Fine points to watch:}
+
+\begin{itemize}
+	\item Predicting \textit{log-std} is more stable than predicting variance directly.
+	\item Uncertainties must be denormalized carefully; they scale differently from the label values.
+	\item Calibration matters: the pull distribution should be close to a standard normal, and the calibration curve should follow the diagonal.
+	\item The test plots help distinguish between good point predictions and well-calibrated uncertainty estimates.
+	\item The model mainly captures aleatoric uncertainty unless explicit Bayesian methods or repeated stochastic passes are added.
+	\item If the pull distribution is too wide or too narrow, the uncertainty estimates are miscalibrated.
+	\item A good uncertainty estimate is more useful than a low loss if the goal is reliable scientific interpretation.
+\end{itemize}
+
+In short, the notebook is not just fitting a CNN. It is building a predictive model that also reports how trustworthy each prediction is, which is the key difference compared to a standard CNN without uncertainty. That makes the model more useful for scientific analysis, because it can highlight predictions that should be treated with caution.
+
+\end{document}
