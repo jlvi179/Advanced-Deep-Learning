@@ -1,0 +1,47 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Summary: Normalizing Flows for Spectrum Analysis}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent GitHub repository: \href{https://github.com/jlvi179/Advanced-Deep-Learning}{https://github.com/jlvi179/Advanced-Deep-Learning}
+
+\section*{What the Notebook Does}
+
+This notebook trains models using Conditional Normalizing Flows (via the \texttt{jammy\_flows} library) to estimate stellar parameters (Effective Temperature $T_{\text{eff}}$, Surface Gravity $\log g$, and Metallicity [Fe/H]) directly from spectra. Like the uncertainty model, it goes beyond point estimation to output full Probability Density Functions (PDFs) by minimizing the Negative Log-Likelihood (NLL).
+
+The notebook evaluates three specific normalizing flow configurations appended to a Convolutional Neural Network feature extractor: a Diagonal Gaussian, a Full Gaussian, and a Full Flow model. The evaluation process highlights how well the models can capture both independent uncertainties and complex physical correlations among the target labels, culminating in multi-dimensional PDF visualizations and calibration metric comparisons.
+
+\section*{Differences Between the Models}
+
+The core differences lie in their probabilistic output layers and flexibility:
+
+\begin{itemize}
+    \item \textbf{Diagonal Gaussian (\texttt{diagonal\_gaussian}):} Outputs independent errors. It cannot model associations or correlations between parameters (its 2D contours are always axis-aligned).
+    \item \textbf{Full Gaussian (\texttt{full\_gaussian}):} Predicts a full covariance matrix. This allows it to model linear dependencies and tilts (correlations) between variables like temperature and surface gravity. 
+    \item \textbf{Full Flow (\texttt{full\_flow}):} Implements a deep, non-linear flow architecture. It can learn highly complex, skewed, or multimodal distribution shapes, making it the most robust for handling physical degeneracies in spectral measurements.
+\end{itemize}
+
+\textbf{Fine points to watch:}
+
+\begin{itemize}
+    \item \textbf{PDFs over Point Estimates:} Normalizing flows require sampling the learned distribution to extract mean target values and standard deviations.
+    \item \textbf{Correlation Modeling:} The kind of 3x3 evaluation plots illustrate marginal distributions on the diagonal and the pairwise correlations in the off-diagonal hexbin plots.
+    \item \textbf{Calibration (Pull Statistics):} Just like in standard uncertainty prediction, evaluating whether the error matches the predicted standard deviation (Pull $\approx 1.0$) determines if the model is over- or under-confident.
+    \item \textbf{Capacity vs. Stability:} While the full flow provides maximum flexibility, deeper flow models require precision control (e.g., converting to \texttt{float64}) to ensure numerical stability during the log-likelihood evaluation.
+\end{itemize}
+
+In short, replacing standard output heads with Normalizing Flows transforms the network into a powerful density estimator capable of expressing physical correlations and complex error contours rather than simply symmetric Gaussian uncertainty.
+
+\end{document}
