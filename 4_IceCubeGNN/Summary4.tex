@@ -1,0 +1,46 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Summary: Dynamic Edge Convolution GNN for IceCube Interaction Localization}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent GitHub repository: \href{https://github.com/jlvi179/Advanced-Deep-Learning}{https://github.com/jlvi179/Advanced-Deep-Learning}
+
+\section*{What the Notebook Does}
+
+This notebook trains a DynamicEdgeConv-based Graph Neural Network to reconstruct the neutrino interaction position $(x,y)$ from IceCube hit data. It loads the parquet event tables, converts variable-length hit lists into graphs, batches them with PyTorch Geometric, and evaluates the final position predictions with plots and regression metrics.
+
+\section*{Architecture Choices}
+
+The main design choices are the graph construction, the EdgeConv stack, and the event-level readout:
+
+\begin{itemize}
+    \item \textbf{Graph construction:} each hit becomes a node with features such as time, x, y, and optional charge; edges are built dynamically from k-NN neighborhoods in feature space.
+    \item \textbf{DynamicEdgeConv layers:} the model recomputes neighbors at every layer, applies an MLP to $[x_i, x_j - x_i]$, and learns local geometric patterns that are hard to capture with a static CNN.
+    \item \textbf{Pooling and head:} after the final EdgeConv block, global mean pooling compresses the node embeddings into one event embedding, then a small MLP maps that embedding to the 2D output.
+    \item \textbf{Batching:} \texttt{collate\_fn\_gnn} turns awkward arrays into \texttt{Data} objects and combines them with \texttt{Batch.from\_data\_list}, which keeps variable hit counts per event manageable.
+\end{itemize}
+
+\textbf{Fine points to watch:}
+
+\begin{itemize}
+    \item \textbf{Graph size vs. memory:} dynamic k-NN recomputation is expressive but expensive, so batch size and k should be chosen with GPU memory in mind.
+    \item \textbf{Training stability:} BatchNorm, residual connections, dropout, and gradient clipping help deeper EdgeConv stacks stay stable.
+    \item \textbf{Checkpoints:} save the model state dict together with the normalization parameters so inference uses the same scaling as training.
+    \item \textbf{Event preprocessing:} the normalization and denormalization steps must match exactly, otherwise evaluation plots and metrics will drift.
+\end{itemize}
+
+In short, the notebook turns each IceCube event into a small graph, lets the network learn local hit-to-hit relations through DynamicEdgeConv, and then pools those relations into a compact event-level prediction for the interaction position.
+
+\end{document}
