@@ -1,0 +1,43 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Summary: Generative Adversarial Network for MNIST Digit Generation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent GitHub repository: \href{https://github.com/jlvi179/Advanced-Deep-Learning}{https://github.com/jlvi179/Advanced-Deep-Learning}
+
+\section*{What the Notebook Does}
+
+This notebook trains a fully connected Generative Adversarial Network (GAN) to generate handwritten MNIST digits. It loads the MNIST training set with \texttt{torchvision}, normalizes the images to the $[-1,1]$ range, trains a generator and discriminator in alternating optimization steps, and visualizes both the training losses and generated digit samples across epochs.
+
+\section*{Architecture Choices}
+
+The main design choices are the input normalization, the MLP-based generator and discriminator, and the adversarial training objective:
+
+\begin{itemize}
+    \item \textbf{Data preprocessing:} MNIST images are converted to tensors, normalized with mean and standard deviation $0.5$, and flattened from $28 \times 28$ pixels into 784-dimensional vectors.
+    \item \textbf{Generator:} random noise vectors of dimension 128 are mapped through fully connected layers with hidden sizes 256, 512, and 1024. Batch normalization and ReLU activations stabilize the hidden layers, while a final \texttt{Tanh} activation matches the normalized image range.
+    \item \textbf{Discriminator:} flattened images are classified by an MLP with hidden sizes 1024, 512, and 256. LeakyReLU activations and dropout help the discriminator learn robust real-vs-fake decisions without becoming too brittle.
+    \item \textbf{Training objective:} both networks use binary cross entropy. The discriminator is trained on real images labeled as 1 and detached generated images labeled as 0, while the generator is trained to make the discriminator classify generated images as real.
+\end{itemize}
+
+\textbf{Fine points to watch:}
+
+\begin{itemize}
+    \item \textbf{Output range:} the \texttt{Tanh} output only makes sense because the real images are normalized to $[-1,1]$; changing the preprocessing would require changing the generator output activation or scaling.
+    \item \textbf{Training balance:} GAN training depends on keeping the discriminator and generator at comparable strength. Dropout in the discriminator and the non-saturating generator loss help avoid early collapse.
+    \item \textbf{Detached fake images:} generated images must be detached during the discriminator update so gradients do not update the generator in that step.
+\end{itemize}
+
+\end{document}
