@@ -1,0 +1,46 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Summary: Transformer for IceCube Interaction Localization}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent GitHub repository: \href{https://github.com/jlvi179/Advanced-Deep-Learning}{https://github.com/jlvi179/Advanced-Deep-Learning}
+
+\section*{What the Notebook Does}
+
+This notebook trains a Transformer-based neural network to reconstruct the neutrino interaction position $(x,y)$ from IceCube hit data. It loads the parquet event tables, treats variable-length hit lists as sequences, handles padding and masking, applies self-attention mechanisms via a Transformer Encoder, and evaluates the final position predictions using regression metrics and plots.
+
+\section*{Architecture Choices}
+
+The main design choices are the sequence processing approach, the Transformer Encoder stack, and the event-level readout:
+
+\begin{itemize}
+    \item \textbf{Sequence formatting:} each event consists of a varying number of hits. To process these efficiently in batches, we split the concatenated hit data based on event lengths and use \texttt{pad\_sequence} to ensure all events in a batch have a uniform sequence length.
+    \item \textbf{Input Embedding:} since our input features per hit (time, x, y) are low-dimensional, we map them into a higher-dimensional representation (\texttt{d\_model}) via a linear projection before passing them into the transformer.
+    \item \textbf{Positional Encoding:} positional encoding here is usually not necessary because our data set is not structured in a strict sequential order like text (the hits are fundamentally an unordered set of detections, and any temporal information is already explicitly provided as a `time` feature). However, adding it can sometimes help the model if sequence order implicitly correlates with some structure.
+    \item \textbf{Transformer Encoder layers:} we utilize standard PyTorch \texttt{TransformerEncoderLayer}s (with multi-head self-attention) to learn the relationships between all detected photons in an event simultaneously.
+    \item \textbf{Masked Pooling and head:} after the Transformer, we apply a masked mean-pooling across the sequence dimension (strictly ignoring padded tokens) to obtain a single aggregated embedding vector per event. A final linear layer maps this to our 2D target position $(x, y)$.
+\end{itemize}
+
+\textbf{Fine points to watch:}
+
+\begin{itemize}
+    \item \textbf{Masking correctly:} a critical step is computing and applying the boolean \texttt{src\_key\_padding\_mask} to ensure that artificial padding tokens do not influence the self-attention scores or the final mean-pooling step.
+    \item \textbf{Sequence Length limitations:} standard self-attention scales quadratically with sequence length ($\mathcal{O}(N^2)$). For events with a massive number of hits, memory consumption can quickly become a bottleneck, which requires careful batch size tuning.
+    \item \textbf{Event preprocessing:} normalization is essential for both the features (time, x, y) and the target labels (xpos, ypos) so that the network gradients flow and converge smoothly.
+\end{itemize}
+
+In short, the notebook treats each IceCube event as a sequence of detection hits, effectively using a Transformer Encoder to weigh and aggregate the relationships among the hits, producing a precise global prediction for the neutrino interaction position.
+
+\end{document}
