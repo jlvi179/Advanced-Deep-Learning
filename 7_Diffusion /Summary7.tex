@@ -17,24 +17,18 @@
 
 \noindent GitHub repository: \href{https://github.com/jlvi179/Advanced-Deep-Learning}{https://github.com/jlvi179/Advanced-Deep-Learning}
 
-\section*{Key Concept}
+\section*{What the Notebook Does}
 
-This notebook implements a Denoising Diffusion Probabilistic Model (DDPM) to generate handwritten digits (MNIST). Rather than focusing on a basic implementation from scratch, the notebook utilizes the highly optimized \texttt{denoising\_diffusion\_pytorch} library, demonstrating practical tweaks required to stabilize and accelerate diffusion model training.
+This notebook completes a template for a Denoising Diffusion Probabilistic Model (DDPM) to generate handwritten MNIST digits using the \texttt{denoising\_diffusion\_pytorch} library. It implements the core training mechanics, including calculating the diffusion loss via forward propagation, performing backpropagation, and tracking the loss over time. It also generates and visualizes intermediate digit samples to monitor the model's progress.
 
-\section*{Crucial Tweaks and Optimizations}
+\section*{Architecture Choices}
 
-Training generative diffusion models is notoriously resource-intensive. The following architectural and procedural tweaks were necessary to make training feasible:
+The main design choices revolve around the predefined U-Net configuration, the DDIM sampling, and the implementation of the training loop:
 
 \begin{itemize}
-    \item \textbf{U-Net Dimensionality Scaling:} To prevent the model from becoming too large to fit in memory or train in a reasonable time, the base feature dimension was restricted to \texttt{dim = 32}, with a specific multiplier scaling of \texttt{dim\_mults = (1, 2, 5)}. This creates a heavily compressed bottleneck suitable for $28 \times 28$ grayscale images (\texttt{channels = 1}).
-    
-    \item \textbf{Disabling Flash Attention:} By default, modern transformer/U-Net architectures attempt to use Flash Attention for speed. However, this often leads to compatibility issues on systems without specific CUDA setups or dedicated GPUs. Explicitly setting \texttt{flash\_attn = False} guarantees the code can run across varied hardware environments (like standard Colab or local CPUs).
-    
-    \item \textbf{Accelerated DDIM Sampling:} The forward diffusion process uses $T = 1000$ steps to smoothly add noise. During inference, stepping back $1000$ times is exceedingly slow. By setting \texttt{sampling\_timesteps = 250}, the model implicitly utilizes DDIM (Denoising Diffusion Implicit Models) sampling, heavily accelerating generation by skipping intermediate timesteps without significantly degrading image quality.
-    
-    \item \textbf{Weight Decay via AdamW:} Diffusion models are prone to overfitting to the specific noise patterns in smaller datasets. Using \texttt{AdamW} instead of a standard Adam optimizer introduces decoupled weight decay, which helps regularize the U-Net parameters smoothly.
-    
-    \item \textbf{Progressive Evaluation Visualization:} Because full training requires hours of compute (often exceeding free Colab tiers), a critical workflow tweak is the inline sampling at regular intervals. Using \texttt{make\_grid}, visual outputs are checked dynamically, providing qualitative feedback on convergence long before the final epoch is reached.
+    \item \textbf{U-Net and DDIM:} The core model uses a custom U-Net architecture with dimension multipliers \texttt{(1, 2, 5)} to capture complex spatial patterns in the 28x28 images. The evaluation process is accelerated by reducing the reverse sampling timesteps from 1000 to 250 using Denoising Diffusion Implicit Models (DDIM).
+    \item \textbf{Training loop implementation:} The core training mechanics are added to an empty template loop. This involves passing the batch of images through the \texttt{diffusion} function to calculate the loss, followed by standard PyTorch backpropagation and AdamW optimizer steps.
 \end{itemize}
+
 
 \end{document}
