@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.22.0 (TeX Live 2025)  (format=lualatex 2025.11.17)  23 JUN 2026 15:28
+This is LuaHBTeX, Version 1.22.0 (TeX Live 2025)  (format=lualatex 2025.11.17)  23 JUN 2026 15:29
  restricted system commands enabled.
 **Summary7.tex
 (./Summary7.tex
@@ -425,7 +425,7 @@ Here is how much of LuaTeX's memory you used:
  498 words of node memory still in use:
    6 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 1 glyph, 7 attribute, 54 glue_spec,
  7 attribute_list, 1 write nodes
-   avail lists: 2:174,3:107,4:7,5:236,6:28,7:4758,8:1,9:178,10:6,11:422
+   avail lists: 2:196,3:125,4:7,5:278,6:31,7:5763,8:1,9:199,10:6,11:524
  32393 multiletter control sequences out of 65536+600000
  35 fonts using 2109231 bytes
  72i,5n,75p,539b,345s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -436,7 +436,7 @@ texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></home/jlvi/.local/texl
 ive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb></home/jlvi/.local/texlive/2
 025/texmf-dist/fonts/type1/public/lm/lmr17.pfb></home/jlvi/.local/texlive/2025/t
 exmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on Summary7.pdf (1 page, 129310 bytes).
+Output written on Summary7.pdf (1 page, 131688 bytes).
 
 PDF statistics: 41 PDF objects out of 1000 (max. 8388607)
  32 compressed objects within 1 object stream

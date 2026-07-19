@@ -30,5 +30,8 @@ The main design choices revolve around the predefined U-Net configuration, the D
     \item \textbf{Training loop implementation:} The core training mechanics are added to an empty template loop. This involves passing the batch of images through the \texttt{diffusion} function to calculate the loss, followed by standard PyTorch backpropagation and AdamW optimizer steps.
 \end{itemize}
 
+\begin{itemize}
+    \item \textbf{Progressive sampling:} Because a full 100-epoch run is extremely resource-intensive, intermediate images are generated regularly using the \texttt{diffusion.sample(batch\_size=4)} function. This provides critical qualitative feedback on denoising capabilities long before training concludes.
+\end{itemize}
 
 \end{document}
